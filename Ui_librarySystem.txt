@@ -1,0 +1,166 @@
+//menu utama
+--------------------------------------------------------------------------------------------------------------------------------------
+
+  ______   ______  __    __  ______  ________   ______         __       ______  _______   _______    ______   _______ __      __
+ /      \ |      \|  \  |  \|      \|        \ /      \       |  \     |      \|       \ |       \  /      \ |       \  \    /  \
+|  $$$$$$\ \$$$$$$| $$  | $$ \$$$$$$| $$$$$$$$|  $$$$$$\      | $$      \$$$$$$| $$$$$$$\| $$$$$$$\|  $$$$$$\| $$$$$$$\$$\  /  $$
+| $$___\$$  | $$   \$$\/  $$  | $$  | $$__    | $$___\$$      | $$       | $$  | $$__/ $$| $$__| $$| $$__| $$| $$__| $$\$$\/  $$
+ \$$    \   | $$    >$$  $$   | $$  | $$  \    \$$    \       | $$       | $$  | $$    $$| $$    $$| $$    $$| $$    $$ \$$  $$
+ _\$$$$$$\  | $$   /  $$$$\   | $$  | $$$$$    _\$$$$$$\      | $$       | $$  | $$$$$$$\| $$$$$$$\| $$$$$$$$| $$$$$$$\  \$$$$
+|  \__| $$ _| $$_ |  $$ \$$\ _| $$_ | $$_____ |  \__| $$      | $$_____ _| $$_ | $$__/ $$| $$  | $$| $$  | $$| $$  | $$  | $$
+ \$$    $$|   $$ \| $$  | $$|   $$ \| $$     \ \$$    $$      | $$     \   $$ \| $$    $$| $$  | $$| $$  | $$| $$  | $$  | $$
+  \$$$$$$  \$$$$$$ \$$   \$$ \$$$$$$ \$$$$$$$$  \$$$$$$        \$$$$$$$$\$$$$$$ \$$$$$$$  \$$   \$$ \$$   \$$ \$$   \$$   \$$
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+masukkan nama panjang anda:
+
+//menu pilihan
+Selamat datang [namaPanjang] di perpustakaan ada yang bisa dibantu?
+(1) meminjam buku
+(2) jadwal peminjaman anda
+(3) pengembalian buku
+pilih dengan mengetik nomor:
+
+//jika user milih meminjam buku (1)
+jenis buku:
+(1) non-fiksi
+(2) fiksi
+(3) Akademik
+pilih jenis dengan mengetik nomor:
+
+ //jika user milih (1)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Sejarah Indonesia                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Ahlak Bernegara Hukum                          |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | Biografi Tan Malaka: Dari Penjara ke Penjara   |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+ketik nomor untuk meminjam buku:
+
+//jika user pinjam buku dan buku belum dipinjam
+
+anda meminjam buku [judul buku], mohon dikembalikan paling telat [jadwal akhir pinjaman]
+
+//jika user mau pinjam buku yang sudah di pinjam
+
+Maaf, buku tersebut lagi dipinjam
+
+//jika user mau pinjam buku tetapi belum mengembalikan buku
+maaf, anda tidak bisa meminjam buku, kembalikan buku yang sudah anda pinjam dahulu
+nama buku: [judul buku]
+jadwal peminjaman: [tanggal meminjam]
+
+//jika user milih (2)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Orang Orang Biasa                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Educated Terdidik                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | Man Boy                                        |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+ketik nomor untuk meminjam buku:
+
+//jika user pinjam buku dan buku belum dipinjam
+
+anda meminjam buku [judul buku], mohon dikembalikan paling telat [jadwal akhir pinjaman]
+
+//jika user mau pinjam buku yang sudah di pinjam
+
+Maaf, buku tersebut lagi dipinjam
+
+//jika user mau pinjam buku tetapi belum mengembalikan buku
+maaf, anda tidak bisa meminjam buku, kembalikan buku yang sudah anda pinjam dahulu
+nama buku: [judul buku]
+jadwal peminjaman: [tanggal meminjam]
+
+//jika user milih (3)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Data Structure Using C                         |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Discrete Mathematics and Its Application       |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | The Essential Academic Dean or Provost         |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+ketik nomor untuk meminjam buku:
+
+//jika user pinjam buku dan buku belum dipinjam
+
+anda meminjam buku [judul buku], mohon dikembalikan paling telat [jadwal akhir pinjaman]
+
+//jika user mau pinjam buku yang sudah di pinjam
+
+Maaf, buku tersebut lagi dipinjam
+
+//jika user mau pinjam buku tetapi belum mengembalikan buku
+maaf, anda tidak bisa meminjam buku, kembalikan buku yang sudah anda pinjam dahulu
+nama buku: [judul buku]
+jadwal peminjaman: [tanggal meminjam]
+
+//jika user memilih jadwal peminjaman anda(2)
+.------------------------------------------------------------------------------------------------------------------------------------------.
+|                                                    JADWAL PENGEMBALIAN ANDA                                                              |
+:--------------------------------------------------------+------------------------------------------------------+--------------------------:
+|                        Nama                            |                     Judul Buku                       |     Jadwal Pengembalian  |
+:--------------------------------------------------------+------------------------------------------------------+--------------------------:                                                                            | [nama]                                                 | [judulBuku]                                          | [jadwal]                 |
+:--------------------------------------------------------+------------------------------------------------------:--------------------------:
+//jika sudah lewat tanggalnya
+anda sudah melewati batas pengembalian tanggal mohon untuk membayar denda buku
+denda anda: (2000 * hari yang terlewatkan)
+//jika user memilih pengembalian buku (3)
+jenis buku yang mau dikembalikan:
+(1) non-fiksi
+(2) fiksi
+(3) Akademik
+pilih jenis dengan mengetik nomor:
+
+//jika user milih (1)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Sejarah Indonesia                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Ahlak Bernegara Hukum                          |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | Biografi Tan Malaka: Dari Penjara ke Penjara   |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+pilih buku mana yang akan anda kembalikan:
+//jika sudah memilih
+terima kasih telah mengembalikan buku [judul buku], semoga harimu indah
+
+//jika user milih (2)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Orang Orang Biasa                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Educated Terdidik                              |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | Man Boy                                        |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+pilih buku mana yang akan anda kembalikan:
+
+//jika sudah memilih
+terima kasih telah mengembalikan buku [judul buku], semoga harimu indah
+
+//jika user milih (3)
+.-------.--------------------------------------------------------.------------.
+|   No  |                    Buku                        |     Status         |
+:-------:------------------------------------------------+--------------------:
+|   1   | Data Structure Using C                         |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   2   | Discrete Mathematics and Its Application       |  Belum Di pinjam   |
+:--------------------------------------------------------+--------------------:
+|   3   | The Essential Academic Dean or Provost         |  Belum Di pinjam   |
+'--------------------------------------------------------'--------------------'
+pilih buku mana yang akan anda kembalikan:
+
+//jika sudah memilih
+terima kasih telah mengembalikan buku [judul buku], semoga harimu indah
