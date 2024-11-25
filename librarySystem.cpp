@@ -53,16 +53,15 @@ void mainMenu(int selection) {
 int main() {
     while(valuewhileloop) {
         mainMenu(selection);
-
    
         key = getKey();
 
         if (key == 'W' || key == 'w') {
-            selection--;  // Move up in the menu
+            selection--;  
         } else if (key == 'S' || key == 's') {
-            selection++;  // Move down in the menu
+            selection++;  
         } else if (key == ' ') {
-            break;  // Exit the menu on spacebar press
+            break;  
         }
 
      
@@ -73,19 +72,20 @@ int main() {
         }
 		switch(selection) {
 			case 0:
-				//ke menu peminjaman
+                printf("ke menu meminjam buku");
 				break;
 			case 1:
 				//ke menu jadwal
+                printf("jadwal peminjaman buku");
 				break;
 			case 2:
 				//ke menu pengambilan buku	
+                printf("pengembalian buku");
 				break; 
 			default:
 				//nanti aja dipikirn
-		}
+                break;
+                }
     }
-    
-
     return 0;
 }
