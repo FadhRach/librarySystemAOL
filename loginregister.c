@@ -70,7 +70,7 @@ void registrasi() {
     }
 
     printf("Masukkan Nama: ");
-    scanf(" %[^\n]", newUser.nama);
+    scanf("%[^\n]s", newUser.nama);
     printf("Masukkan Password: ");
     scanf("%s", newUser.password);
 
