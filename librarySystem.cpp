@@ -2,22 +2,68 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <windows.h>
 #include <time.h>
+#include <ctype.h>
 
-#if _WIN32
+#if _WIN32 || _WIN64
+    #include <windows.h>
     #include <conio.h>
     #define CLEAR_SCREEN "cls"
 #else
-    #include <unistd.h>
-    #define CLEAR_SCREEN "clear"
-    char getch() {
-        system("stty raw -echo");
-        char ch = getchar();
-        system("stty cooked echo");
-        return ch;
-    }
+#include <unistd.h>
+#include <termios.h>
+//dari https://stackoverflow.com/questions/7469139/what-is-the-equivalent-to-getch-getche-in-linux
+static struct termios old, current;
+
+/* Initialize new terminal i/o settings */
+void initTermios(int echo) 
+{
+  tcgetattr(0, &old); /* grab old terminal i/o settings */
+  current = old; /* make new settings same as old settings */
+  current.c_lflag &= ~ICANON; /* disable buffered i/o */
+  if (echo) {
+      current.c_lflag |= ECHO; /* set echo mode */
+  } else {
+      current.c_lflag &= ~ECHO; /* set no echo mode */
+  }
+  tcsetattr(0, TCSANOW, &current); /* use these new terminal i/o settings now */
+}
+
+/* Restore old terminal i/o settings */
+void resetTermios(void) 
+{
+  tcsetattr(0, TCSANOW, &old);
+}
+
+/* Read 1 character - echo defines echo mode */
+char getch_(int echo) 
+{
+  char ch;
+  initTermios(echo);
+  ch = getchar();
+  resetTermios();
+  return ch;
+}
+
+/* Read 1 character without echo */
+char getch(void) 
+{
+  return getch_(0);
+}
+
+/* Read 1 character with echo */
+char getche(void) 
+{
+  return getch_(1);
+}
+#define CLEAR_SCREEN "clear"
 #endif
+void disableCursor() {
+     printf("\033[?25l");
+}
+void enableCursor() {
+    printf("\033[?25h");
+}
 
 //MODEL-----------------------------------------------------------------
 typedef struct {
@@ -32,6 +78,14 @@ typedef struct {
     char jenis[50];
     int thnTerbit;
 } Buku;
+
+typedef struct {
+    char nim[20];
+    char idBuku[10];
+    int status; // 0 = belum dipinjam, 1 = dipinjam
+} Peminjaman;
+
+
 
 //COMPONENT-------------------------------------------------------------
 void clearScreen() {
@@ -160,10 +214,12 @@ void writeUser(User users[], int count) {
         return;
     }
     for (int i = 0; i < count; i++) {
-        fprintf(f, "%s#%s#%s\n", users[i].nim, users[i].nama, users[i].password);
+        fprintf(f, "\n%s#%s#%s\n", users[i].nim, users[i].nama, users[i].password);
     }
     fclose(f);
 }
+
+
 
 //PAGE------------------------------------------------------------------
 void tambahBuku() {
@@ -229,7 +285,7 @@ void lihatBuku() {
             selection--;
         } else if (key == 'S' || key == 's') {
             selection++;
-        } else if (key == 13) {
+        } else if (key == '\n' || key == '\r') {
             break;
         }
 
@@ -368,7 +424,7 @@ void checkBuku() {
             selection--;
         } else if (key == 'S' || key == 's') {
             selection++;
-        } else if (key == 13) {
+        } else if (key == '\n' || key == '\r') {
             switch (selection) {
                 case 0:
                     tambahBuku();
@@ -392,7 +448,231 @@ void checkBuku() {
     }
 }
 
+void pinjamBuku() {
+    clearScreen();
+    headingLibrary();
+    enableCursor();
+
+    Buku buku[100];
+    FILE *file = fopen("buku.txt", "r");
+    if (!file) {
+        printf("File buku.txt tidak ditemukan!\n");
+        return;
+    }
+
+    int count = 0;
+    while (fscanf(file, "%[^#]#%[^#]#%[^#]#%d\n", buku[count].idBuku, buku[count].judul, buku[count].jenis, &buku[count].thnTerbit) != EOF) {
+        if (count >= 100) { 
+            printf("Data buku kebanyakan\n");
+            fclose(file);
+            return;
+        }
+        count++;
+    }
+    fclose(file);
+
+    SortingDescendingBuku(buku, count);
+    ReadAllBuku(buku, count);
+
+    char nim[20], idBuku[10];
+    printf("\nMasukkan NIM Anda: ");
+    scanf("%8s", nim); getchar();
+
+    printf("Masukkan ID Buku yang ingin dipinjam: ");
+    scanf("%s", idBuku); getchar();
+
+    int foundBook = 0;
+    for (int i = 0; i < count; i++) {
+        if (strcmp(buku[i].idBuku, idBuku) == 0) {
+            foundBook = 1;
+            break;
+        }
+    }
+
+    if (!foundBook) {
+        printf("Buku dengan ID %s tidak ditemukan.\n", idBuku);
+        return;
+    }
+
+    Peminjaman peminjaman;
+    file = fopen("peminjaman.txt", "r");
+    if (file) {
+        while (fscanf(file, "%[^#]#%[^#]#%d\n", peminjaman.nim, peminjaman.idBuku, &peminjaman.status) != EOF) {
+            if (strcmp(peminjaman.idBuku, idBuku) == 0 && peminjaman.status == 1) {
+                printf("Maaf, buku sudah dipinjam.\n");
+                fclose(file);
+                return;
+            }
+        }
+        fclose(file);
+    }
+
+    file = fopen("peminjaman.txt", "a");
+    if (!file) {
+        printf("Gagal membuka file peminjaman.txt untuk menambahkan data.\n");
+        return;
+    }
+
+    fprintf(file, "%s#%s#%d\n", nim, idBuku, 1);  
+    fclose(file);
+    printf("Buku berhasil dipinjam!\n");
+
+    printf("Tekan Enter untuk kembali ke menu utama...");
+    getch();
+    disableCursor();
+}
+
+
+void lihatPeminjamanBuku() {
+    enableCursor();
+    clearScreen();
+    headingLibrary();
+
+    FILE *file = fopen("peminjaman.txt", "r");
+    if (!file) {
+        printf("data peminjaman tidak bisa diakses\n");
+        sleep(2);
+        return;
+    }
+
+    Peminjaman peminjaman[100];
+    int count = 0;
+
+    while (fscanf(file, "%[^#]#%[^#]#%d\n", peminjaman[count].nim, peminjaman[count].idBuku, &peminjaman[count].status) != EOF) {
+        count++;
+    }
+    fclose(file);
+
+    char nim[20];
+    printf("Masukkan NIM Anda: ");
+    scanf("%s", nim); getchar();
+
+    int found = 0;
+    printf("\n+------------+------------------------------------------+------------------------------+\n");
+    printf("| ID Buku    | Judul                                    | Status                       |\n");
+    printf("+------------+------------------------------------------+------------------------------+\n");
+    for (int i = 0; i < count; i++) {
+        if (strcmp(peminjaman[i].nim, nim) == 0 && peminjaman[i].status == 1) {
+            Buku buku;
+            FILE *bookFile = fopen("buku.txt", "r");
+            if (bookFile) {
+                while (fscanf(bookFile, "%[^#]#%[^#]#%[^#]#%d\n", buku.idBuku, buku.judul, buku.jenis, &buku.thnTerbit) != EOF) {
+                    if (strcmp(buku.idBuku, peminjaman[i].idBuku) == 0) {
+                        printf("| %-10s | %-40s | %-28s |\n", buku.idBuku, buku.judul, peminjaman[i].status == 1 ? "Dipinjam" : "Tersedia");
+                        found = 1;
+                        break;
+                    }
+                }
+                fclose(bookFile);
+            }
+        }
+    }
+
+    if (!found) {
+        printf("| %-90s |\n", "Tidak ada buku yang dipinjam.");
+    }
+
+    printf("+------------+------------------------------------------+------------------------------+\n");
+    printf("Tekan Enter untuk kembali ke menu utama...");
+    getch();
+
+    disableCursor();
+}
+
+void kembalikanBuku() {
+    clearScreen();
+    enableCursor();
+    headingLibrary();
+    char nim[20], idBuku[10];
+    int foundBook = 0;
+    int hasBorrowedBooks = 0; // Flag to check if books are displayed
+    printf("\nMasukkan NIM Anda: ");
+    scanf("%s", nim); getchar();
+
+    Peminjaman peminjaman;
+    FILE *file = fopen("peminjaman.txt", "r");
+    FILE *tempFile = fopen("temp_peminjaman.txt", "w");
+
+    if (!file || !tempFile) {
+        printf("Gagal membuka file peminjaman!\n");
+        return;
+    }
+
+    printf("\n+------------+------------------------------------------+------------------------------+\n");
+    printf("| ID Buku    | Judul                                    | Status                       |\n");
+    printf("+------------+------------------------------------------+------------------------------+\n");
+
+    while (fscanf(file, "%[^#]#%[^#]#%d\n", peminjaman.nim, peminjaman.idBuku, &peminjaman.status) != EOF) {
+        if (peminjaman.status == 0) {
+            fprintf(tempFile, "%s#%s#%d\n", peminjaman.nim, peminjaman.idBuku, peminjaman.status);
+            continue;
+        }
+
+        if (strcmp(peminjaman.nim, nim) == 0) {
+            Buku buku;
+            FILE *bookFile = fopen("buku.txt", "r");
+            if (bookFile) {
+                while (fscanf(bookFile, "%[^#]#%[^#]#%[^#]#%d\n", buku.idBuku, buku.judul, buku.jenis, &buku.thnTerbit) != EOF) {
+                    if (strcmp(buku.idBuku, peminjaman.idBuku) == 0) {
+                        printf("| %-10s | %-40s | %-28s |\n", buku.idBuku, buku.judul, "Dipinjam");
+                        hasBorrowedBooks = 1; // Mark that a book has been displayed
+                        break;
+                    }
+                }
+                fclose(bookFile);
+            }
+        }
+
+        fprintf(tempFile, "%s#%s#%d\n", peminjaman.nim, peminjaman.idBuku, peminjaman.status);
+    }
+    printf("+------------+------------------------------------------+------------------------------+\n");
+
+    fclose(file);
+    fclose(tempFile);
+
+    if (!hasBorrowedBooks) {
+        printf("Tidak ada buku yang dipinjam.\n");
+    } else {
+        printf("Masukkan ID Buku yang ingin dikembalikan: ");
+        scanf("%s", idBuku); getchar();
+
+        file = fopen("peminjaman.txt", "r");
+        tempFile = fopen("temp_peminjaman.txt", "w");
+        int found = 0;
+
+        while (fscanf(file, "%[^#]#%[^#]#%d\n", peminjaman.nim, peminjaman.idBuku, &peminjaman.status) != EOF) {
+            if (strcmp(peminjaman.nim, nim) == 0 && strcmp(peminjaman.idBuku, idBuku) == 0 && peminjaman.status == 1) {
+                found = 1;
+                peminjaman.status = 0; 
+            }
+
+            fprintf(tempFile, "%s#%s#%d\n", peminjaman.nim, peminjaman.idBuku, peminjaman.status);
+        }
+
+        fclose(file);
+        fclose(tempFile);
+
+        if (found) {
+            remove("peminjaman.txt");
+            rename("temp_peminjaman.txt", "peminjaman.txt");
+            printf("\nBuku berhasil dikembalikan!\n");
+        } else {
+            remove("temp_peminjaman.txt");
+            printf("\nBuku dengan ID %s tidak ditemukan dalam peminjaman Anda.\n", idBuku);
+        }
+    }
+
+    disableCursor();
+    printf("Tekan Enter untuk kembali ke menu utama...");
+    getch();
+}
+
+
+
+
+
 void mainMenuUser(char *nama) {
+    disableCursor();
     int selection = 0;
     char key;
 
@@ -413,7 +693,7 @@ void mainMenuUser(char *nama) {
             selection--;
         } else if (key == 'S' || key == 's') {
             selection++;
-        } else if (key == 13) {
+        } else if (key == '\n' || key == '\r') {
             break;
         }
 
@@ -426,13 +706,13 @@ void mainMenuUser(char *nama) {
             lihatBuku();
             break;
         case 1:
-            // LihatPinjamBuku();
+            lihatPeminjamanBuku();
             break;
         case 2:
-            // PinjamBuku();
+            pinjamBuku();
             break;
         case 3:
-            // MengembalikanBuku();
+            kembalikanBuku();
             break;
         case 4:
             return;
@@ -444,7 +724,7 @@ void mainMenuUser(char *nama) {
 void mainMenuAdmin(char *nama) {
     int selection = 0;
     char key;
-
+    disableCursor();
     while (1) {
         clearScreen();
         headingLibrary();
@@ -461,7 +741,7 @@ void mainMenuAdmin(char *nama) {
             selection--;
         } else if (key == 'S' || key == 's') {
             selection++;
-        } else if (key == 13) {
+        } else if (key == '\n' || key == '\r') {
             break;
         }
 
@@ -492,6 +772,7 @@ void login() {
     int status = 0;
 
     clearScreen();
+    enableCursor();
     headingLibrary();
     printf("Login Session\n");
     printf("Masukkan NIM: ");
@@ -524,18 +805,19 @@ void login() {
         printf("Tekan Enter untuk kembali ke menu utama...");
         getch();
     }
+    disableCursor();
 }
 
+
 void registrasi() {
+    clearScreen();
+    enableCursor();
+    headingLibrary();
     User newUser;
-    printf("\nRegister Session\n");
+    puts("NIM harus terdiri dari 8 digit angka.");
     printf("Masukkan NIM: "); 
     scanf("%s", newUser.nim); getchar();
 
-    // if (cekNIM(newUser.nim)) {
-    //     printf("NIM sudah terdaftar!\n");
-    //     return;
-    // }
 
     printf("Masukkan Nama: ");
     scanf("%[^\n]", newUser.nama); getchar();
@@ -548,6 +830,7 @@ void registrasi() {
     printf("\n");
     printf("Tekan Enter untuk kembali ke menu utama...");
     getch();
+    disableCursor();
 }
 
 void landingPage() {
@@ -570,7 +853,7 @@ void landingPage() {
             selection--;
         } else if (key == 'S' || key == 's') {
             selection++;
-        } else if (key == 13) {
+        } else if (key == '\n' || key == '\r') {
             break;
         }
 
@@ -594,11 +877,16 @@ void landingPage() {
 }
 
 
+
+
+
 int main() {
+    #if _WIN32 || _WIN64
     // Masuk ke fullscreen mode (Windows only)
     // keybd_event(VK_F11, 0, 0, 0);
     keybd_event(VK_F11, 0, KEYEVENTF_KEYUP, 0);
-
+    #endif
+    disableCursor();
     landingPage();
 
     return 0;
